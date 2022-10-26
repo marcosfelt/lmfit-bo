@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "lmfit-bo"
+name = "lmfit_bo"
 version = "0.1.0"
 description = "Nonlinear least square using Bayesian optimization"
 authors = ["Kobi Felton <kobi.c.f@gmail.com>"]
@@ -12,6 +12,7 @@ botorch = "^0.7.2"
 matplotlib = "^3.6.1"
 
 [tool.poetry.dev-dependencies]
+black = "^22.10.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
