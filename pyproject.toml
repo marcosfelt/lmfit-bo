@@ -10,6 +10,7 @@ python = "^3.8"
 lmfit = "^1.0.3"
 botorch = "^0.7.2"
 matplotlib = "^3.6.1"
+scikit-optimize = "^0.9.0"
 
 [tool.poetry.dev-dependencies]
 black = "^22.10.0"

@@ -1,13 +1,16 @@
-from lmfit import minimize as lmfit_minimize
+# from .bayes_opt import bayes_opt
+from .bayes_opt import gp_minimize
 from lmfit.minimizer import (
     Minimizer,
     thisfuncname,
     maxeval_warning,
     SCALAR_METHODS,
     MinimizerException,
+    AbortFitException,
+    HAS_NUMDIFFTOOLS,
 )
+import numpy as np
 import warnings
-from lmfit import Parameters
 
 
 class NewMinmizer(Minimizer):
@@ -102,7 +105,7 @@ class NewMinmizer(Minimizer):
             function = self.shgo
         elif user_method == "dual_annealing":
             function = self.dual_annealing
-        elif user_method == "bayes-opt":
+        elif user_method == "bayes_opt":
             function = self.bayes_opt
         else:
             function = self.scalar_minimize
@@ -113,11 +116,48 @@ class NewMinmizer(Minimizer):
                     kwargs["method"] = val
         return function(**kwargs)
 
-    def bayes_opt(self):
-        pass
+    def bayes_opt(self, params=None, max_nfev=None, **kws):
+        result = self.prepare_fit(params=params)
+        result.method = "bayes_opt"
+        self.set_max_nfev(max_nfev, 20 * (result.nvarys + 1))
+
+        dimensions = np.array([(p.min, p.max) for p in self.params.values()])
+        bayes_opt_kws = dict(dimensions=dimensions, initial_point_generator="lhs")
+
+        bayes_opt_kws.update(self.kws)
+        bayes_opt_kws.update(kws)
+
+        # x0 = result.init_vals
+        result.call_kws = bayes_opt_kws
+        try:
+            # Put Bayesian optimization code here
+            ret = gp_minimize(self.penalty, **bayes_opt_kws)
+        except AbortFitException:
+            pass
+
+        if not result.aborted:
+            result.message = ret.message
+            result.residual = self.__residual(ret.x)
+            result.nfev -= 1
+
+        result._calculate_statistics()
+
+        # calculate the cov_x and estimate uncertainties/correlations
+        if (
+            not result.aborted
+            and self.calc_covar
+            and HAS_NUMDIFFTOOLS
+            and len(result.residual) > len(result.var_names)
+        ):
+            _covar_ndt = self._calculate_covariance_matrix(ret.x)
+            if _covar_ndt is not None:
+                result.covar = self._int2ext_cov_x(_covar_ndt, ret.x)
+                self._calculate_uncertainties_correlations()
+
+        return result
 
 
-def minimize(
+def minimize_bo(
     fcn,
     params,
     method="leastsq",
@@ -246,7 +286,7 @@ def minimize(
         fitter.minimize(method=method)
 
     """
-    fitter = Minimizer(
+    fitter = NewMinmizer(
         fcn,
         params,
         fcn_args=args,
