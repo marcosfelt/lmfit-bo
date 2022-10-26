@@ -1,7 +1,7 @@
 """Gaussian process-based minimization algorithms."""
 
 import numpy as np
-
+from tqdm import trange
 from sklearn.utils import check_random_state
 from skopt.utils import cook_estimator, normalize_dimensions
 
@@ -567,7 +567,7 @@ def base_minimize(
             return result
 
     # Optimize
-    for n in range(n_calls):
+    for n in trange(n_calls):
         next_x = optimizer.ask()
         next_y = func(np.array(next_x))
         result = optimizer.tell(next_x, next_y)

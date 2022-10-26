@@ -527,7 +527,7 @@ tests = ["nose", "numpy"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "2d04697d5e679e28604d9225a2c6dbd84770c988e17e5b954446cd283cc4aa27"
+content-hash = "e09b4d93d3fb14d3bec3466607abf5f403163b6b6de3b606a4a065ba3c6ee611"
 
 [metadata.files]
 asteval = [

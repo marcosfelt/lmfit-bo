@@ -122,7 +122,10 @@ class NewMinmizer(Minimizer):
         self.set_max_nfev(max_nfev, 20 * (result.nvarys + 1))
 
         dimensions = np.array([(p.min, p.max) for p in self.params.values()])
-        bayes_opt_kws = dict(dimensions=dimensions, initial_point_generator="lhs")
+        bayes_opt_kws = dict(
+            dimensions=dimensions,
+            initial_point_generator="lhs",
+        )
 
         bayes_opt_kws.update(self.kws)
         bayes_opt_kws.update(kws)
@@ -136,7 +139,7 @@ class NewMinmizer(Minimizer):
             pass
 
         if not result.aborted:
-            result.message = ret.message
+            # result.message = ret.message
             result.residual = self.__residual(ret.x)
             result.nfev -= 1
 
